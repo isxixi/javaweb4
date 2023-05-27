@@ -1,0 +1,52 @@
+项目结构：
+pojo:javabean ，也就是自定义的实体类，或者叫数据结构，例如User，Product
+    *两种实体类  1）一个数据库表对应一个数据类，方便于数据库操作 2）方便于获取前端传递来的参数（例如BeanUtils）
+controller：控制层（放servlet），也就是和用户进行直接互动的类：可以获取用户传递来的参数（request），给用户返回信息（response）
+service：业务层，放Java类，处理业务的，例如身份验证、购买、查询、订单管理等。
+dao:数据库操作，连接数据库，对数据库进行增删改查（一般来说，创建数据库连接、实现增删改查（写sql语句））
+
+JDBC：使用Java连接数据库，操作数据库的方法，是Java数据库操作的基础
+      *MyBatis框架：思考MyBatis操作数据库和使用JDBC操作数据库的异同点？
+步骤：
+1导入包（我们使用的是maven导入包，在pom.xml文件里配置dependency）
+2加载驱动 com.mysql.cj.jdbc.Driver:对应MySQL新版本
+    *可能会报时区问题：我们要在设置数据库url(jdbc:mysql://localhost:3306/javaweb)在后边通过加？xxx=xxx配置时区，即url+?serverTimezone=UTC
+    *SSL安全链接问题 ？useSSL = false
+3创建和数据库的连接Connection（注意：创建Connection对象）
+      Connection connecton = DriverManager.getConnection();
+        *反射机制：Class.forName(类) -把类保存为class类 解析我们写的类，把属性给属性类，方法给方法类 创建属性对象、方法对象之后就可以调用这些对象实现具体功能
+           *getConnection(参数)：
+            public static Connection getConnection(String url,
+                   String user, String password) throws SQLException{ } 这种如果需要修改用户名密码需要重新部署服务器不方便
+            public static Connection getConnection(String url,
+                    java.util.Properties info) throws SQLException { }
+               *String url:数据库地址jdbc:mysql://localhost:3306/db_name
+                   jdbc:mysql:// ~ http:// or https://
+                   localhost:3306 ~ localhost:8080 192.125.33.33 or www.sdufe.edu.cn
+                   db_name ~ 网站名称或项目名称
+                   可以使用？后接参数的形式往数据库传参数jdbc:mysql://localhost:3306/db_name?xxx=xxx&yyy=yyy&zzz=zzz
+                   *String username,String password ? Properties info ?url(自己写带参数的url)
+4 对数据库进行操作
+   *对应我们在servlet（Tomcat）里学习到的内容
+   *HTTPServletRequest / HttpServletResponse
+   *PrintWriter
+   *Statement/PreparedStatement：增删改查
+     *Statement：
+        *创建：Statement statement = connection.createStatement(); 创建时无需指定sql语句
+        *查询：executeQuery(String sql);删改增：executeUpdate(String sql)
+        *需要把参数写死在sql中，可能会遇到sql攻击，不安全
+     *PreparedStatement：
+        *创建：PreparedStatement preparedStatement = connection.prepareStatement(String sql);
+        *查询：executeQuery();删改增：executeUpdate()方法上无需指定url
+        *使用？作为占位符，#{}占位符，${}字符串拼接符，使用setXXX()方法为占位符赋值，安全性更高
+   Statement有安全隐患 name = "'or 1=1 or'"  需要把参数写死在sql语句中
+   *Preparedstatement :使用？作为占位符，使用setxxx()方法为占位符赋值，安全性更高
+5数据库操作的返回值
+    *查找方法：返回ResultSet数据格式，就是一个集合，可以使用循环遍历的方法while（resultSet.next()）判断并取出所有数据
+      *建议：将ResultSet中的数据封装到JavaBean中（也就是实体类）
+    *更新方法（删、改、插）：返回值是一个int，表示对数据库表中哪几行进行了操作
+
+数据封装
+  *基本概念：将数据库中的一条数据封装（保存）到一个对应的对象里
+  *基本操作：
+     1）创建实体类（数据库里的一张表对应一个实体类）：属性（对应数据库中的字段）+方法（get和set方法）

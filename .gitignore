@@ -1,0 +1,4 @@
+# 项目排除路径
+/chapter/target/
+/chapter4/web/WEB-INF/classes/
+/out/
